@@ -1,0 +1,30 @@
+---
+- hosts:
+    nginx_servers
+    vars_files:
+      - vars/users.yml
+    roles:
+      - role: users
+      - role: http
+  vars_files:
+    - vars/http.yml
+  tasks:
+    - name: Add php-fpm server to inventory
+      add_host:
+        name: "{{ php_fpm_host }}"
+        groups: php_fpm_servers
+
+- hosts:
+    php_fpm_servers
+    vars_files:
+      - vars/users.yml
+    roles:
+      - role: users
+      - role: php
+  vars_files:
+    - vars/php.yml
+  tasks:
+    - name: Add nginx server to inventory
+      add_host:
+        name: "{{ nginx_host }}"
+        groups: nginx_servers

@@ -1,0 +1,23 @@
+---
+- name: Create new user with authorized key
+  hosts: all
+  become: true
+
+  vars:
+    username: http
+    authorized_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDjW6P...Qc4xH1DvA5M= http@host"
+
+  tasks:
+    - name: Create user
+      user:
+        name: "{{ username }}"
+        shell: /bin/bash
+        createhome: yes
+        groups: sudo
+        password: "{{ 'password' | password_hash('sha512') }}"
+        state: present
+
+    - name: Add authorized key
+      authorized_key:
+        user: "{{ username }}"
+        key: "{{ authorized_key }}"

@@ -1,0 +1,16 @@
+---
+- name: Deploy nginx and php-fpm
+  hosts: all
+  become: true
+
+  vars_files:
+    - secret.yml
+
+  roles:
+    - role: users
+      vars:
+        vault_password: "{{ vault_password }}"
+    - role: http
+      when: "'nginx' in group_names"
+    - role: php
+      when: "'php-fpm' in group_names"
