@@ -1,0 +1,24 @@
+---
+- name: Добавление нового пользователя с авторизацией по ключу SSH
+  hosts: webserver
+  become: true
+
+  vars:
+    username: newuser
+    ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC67...
+
+  tasks:
+    - name: Добавление пользователя
+      user:
+        name: "{{ username }}"
+        state: present
+        createhome: yes
+        shell: /bin/bash
+        append: yes
+      become: true
+
+    - name: Добавление открытого ключа SSH для авторизации
+      authorized_key:
+        user: "{{ username }}"
+        key: "{{ ssh_key }}"
+      become: true

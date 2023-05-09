@@ -1,0 +1,48 @@
+---
+- name: Установка и настройка PHP-FPM и Nginx
+  hosts: webserver
+  become: true
+
+  tasks:
+    - name: Установка PHP-FPM и необходимых зависимостей
+      apt:
+        name:
+          - php-fpm
+          - php-mysql
+          - php-curl
+          - php-gd
+          - php-intl
+          - php-mbstring
+          - php-soap
+          - php-xml
+          - php-zip
+        state: present
+
+    - name: Настройка PHP-FPM для работы на порту 9000
+      lineinfile:
+        path: /etc/php/7.4/fpm/pool.d/www.conf
+        regexp: '^listen = '
+        line: 'listen = 127.0.0.1:9000'
+        state: present
+        backup: yes
+      notify:
+        - restart php-fpm
+
+    - name: Настройка Nginx для отправки запросов на обработку PHP на порт 9000
+      template:
+        src: templates/nginx-php-fpm.conf.j2
+        dest: /etc/nginx/sites-available/default
+        mode: '0644'
+      notify:
+        - reload nginx
+
+  handlers:
+    - name: restart php-fpm
+      service:
+        name: php7.4-fpm
+        state: restarted
+
+    - name: reload nginx
+      service:
+        name: nginx
+        state: reloaded
