@@ -1,0 +1,53 @@
+---
+- name: Установка и настройка Nginx и PHP-FPM
+  hosts: webserver
+  become: true
+
+  vars:
+    username: newuser
+    ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC67...
+
+  tasks:
+    - name: Добавление нового пользователя
+      user:
+        name: "{{ username }}"
+        state: present
+        createhome: yes
+        shell: /bin/bash
+        append: yes
+      become: true
+
+    - name: Установка Nginx
+      apt:
+        name: nginx
+        state: latest
+      become: true
+
+    - name: Настройка Nginx
+      copy:
+        src: nginx.conf
+        dest: /etc/nginx/nginx.conf
+      notify: restart nginx
+
+    - name: Установка PHP-FPM
+      apt:
+        name: php-fpm
+        state: latest
+      become: true
+
+    - name: Настройка PHP-FPM
+      copy:
+        src: www.conf
+        dest: /etc/php/7.4/fpm/pool.d/www.conf
+      notify: restart php-fpm
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+    - name: restart php-fpm
+      service:
+        name: php7.4-fpm
+        state: restarted
